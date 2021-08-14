@@ -14297,7 +14297,7 @@ $$ U(N) = \frac {1}{N(N-1)} \sum^{N}_{\stackrel{i &lt; j}{}} \text{log}\big(||z_
 <p>Finally, a scheme for introducing reparameterized noise is required. The encoder $F$ maps $x_i \to z_i$, where noise is then added such that $\bar{z_i} = z_i + \mathcal{N}(0, \Sigma)$ and the original $x_i$ is recontructed by the decoder $G$ which maps $\bar{z_i} \to \tilde{x_i}$. As per the usual autoencoder structure, the reconstruction loss is minimized. Currently the $\mathcal{l}^2$ norm is used, however, this term could be be replaced by a more justified method such as the continuous Bernoulli distribution [5]. By seperating the latent variable $z_i$ into a radial and angular component $z^{rad}_i$ and $z^{ang}_i$, the noise can be introduced in a simple and precise manner. Unlike the VAE, these noise parameters are fixed, meaning they are not learned in the optimization process. First, the radial noise contribution is parameterized by the prior distribution variance $\sigma$</p>
 $$\bar z^{rad}_i = z^{rad}_i + \mathcal{N}(0, \sigma) \tag{4}$$<p>The angular noise is constructed such that it's variance is proportional to the average nearest neighbour distance given $N$ evenly spaced points on the surface on the $D_z-1$ sphere with radius $\rho$. Given a large $N$ relative to $D_z$ and $\rho$ it can be assumed that the local region around any point $z_i$ is flat. Thus, given $d$ as the average nearest neighbour distance, the radial noise contribution is then</p>
 $$\bar z^{ang}_i = z^{ang}_i + \mathcal{N} \bigg( {0, \frac{\rho}{2\theta \sqrt{d}}} \bigg) \text{ }, \text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ } d = \frac{1}{N} \sum^N_{i=0} \bigg (\text{min} \sum^N_{j=0, \text{ }j \neq i} ||z_i - z_j||\bigg) \tag{5}$$<p>where the hyperparameter $\theta$ is used to control the variance of the noise. For example, if $\theta = 1$ then the gaussian noise of neighboring points will intersect at a variance of 1. In practice the noise can be implimented by first introducing the angular component, then normalizing the vector to it's original length, and finally adding the radial component. The combined loss function can be written with hyperparameters ${\lambda}$ as
-$$\mathcal{L}(x,z) = \frac{1}{n} \sum^n_{i=0} \text{ } \sum^n_{j=0, \text{ }j \neq i} ||x_i - \tilde{x_i}|| + \frac{\lambda_1}{2} \bigg(\frac{||z_i||-\rho}{\sigma}\bigg)^2 + \frac {\lambda_2}{(n-1)} \text{log}\big (||z_i - z_j||^{-1}\big) $$
+$$\mathcal{L}(x,z) = \frac{1}{n} \sum^n_{i=0} \text{ } \sum^n_{j=0, \text{ }j \neq i} ||x_i - \tilde{x_i}|| + \frac{\lambda_1}{2} \bigg(\frac{||z_i||-\rho}{\sigma}\bigg)^2 + \frac {\lambda_2}{(n-1)} \text{log}\big (||z_i - z_j||^{-1}\big) \tag{6} $$
 where $n$ is a given batch size. A graph of the ideal latent space is shown below with $D_z=3$, $\sigma = 0.1$ and $N=100$. The left graph has $\theta = 2$, while the right graph has $\theta = 1$, which are values that would be used in practice.</p>
 <p><img align="left" width="400" height="400" src="blog_images/noise_sphere.gif">
 <img align="right" width="400" height="400" src="blog_images/dense_sphere.gif"></p>
@@ -14641,9 +14641,9 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>An interesting observation can be made when comparing the proposed distribution to the standard gaussian in high dimensions. As described in [8], the majority of the probability mass of an identity covariance gaussian tends to lie within a region centered at $\sqrt{n}$, where $n$ is the dimension of the space. To investigate this effect in more detail it useful to redefine the probability distributions using radial coordinates. By using the surface area of a sphere in $n$ dimensions $S_{n-1}$, the probablility distributions can be defined in the following manner where $G_n(r)$ is the gaussian distribution and $T_n(r, \rho)$ is the proposed Thomson distribution. These functions are also plotted below using 7 evenly placed distributions with dimension $n$ between 5 and 155</p>
-$$ S_{n-1}(r) = \frac{2\pi^{n/2} r^n}{\Gamma (\frac{n}{2})} $$<p></p>
-$$ G_n(r) = A_n\text{ }S_{n-1}(r)\text{ exp} -\frac{1}{2} \bigg(\frac{r}{\sigma}\bigg)^2$$<p></p>
-$$ T_n(r,\rho) = B_n\text{ }S_{n-1}(r)\text{ exp}-\frac{1}{2} \bigg(\frac{r - \rho}{\sigma}\bigg)^2$$<p></p>
+$$ S_{n-1}(r) = \frac{2\pi^{n/2} r^n}{\Gamma (\frac{n}{2})} \tag{7}$$<p></p>
+$$ G_n(r) = A_n\text{ }S_{n-1}(r)\text{ exp} -\frac{1}{2} \bigg(\frac{r}{\sigma}\bigg)^2 \tag{8}$$<p></p>
+$$ T_n(r,\rho) = B_n\text{ }S_{n-1}(r)\text{ exp}-\frac{1}{2} \bigg(\frac{r - \rho}{\sigma}\bigg)^2 \tag{9}$$<p></p>
 <p><center> <img align="center" width="1000" height="400" src="blog_images/og_pdfs.png"></p>
 
 </div>
@@ -14651,7 +14651,7 @@ $$ T_n(r,\rho) = B_n\text{ }S_{n-1}(r)\text{ exp}-\frac{1}{2} \bigg(\frac{r - \r
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>It can be immediately seen that the distributions appear to converge up to a shift, which turns out to be $\frac{\rho}{2}$. The Thomson distribution $T_n(r, \rho)$ can then be re-written under this shift as $\hat T_n(r, \rho)$, where it is plotted alongside the gaussian distribution below.</p>
-$$ \hat T_n(r, \rho) = C_n\text{ }S_{n-1}(r) \text{ }\frac{(r+\frac{\rho}{2})^n}{r^n} \text{ exp}-\frac{1}{2} \bigg(\frac{r - \frac{\rho}{2}}{\sigma}\bigg)^2 $$<p><center> <img align="center" width="1000" height="400" src="blog_images/shift_pdfs.png"></p>
+$$ \hat T_n(r, \rho) = C_n\text{ }S_{n-1}(r) \text{ }\frac{(r+\frac{\rho}{2})^n}{r^n} \text{ exp}-\frac{1}{2} \bigg(\frac{r - \frac{\rho}{2}}{\sigma}\bigg)^2 \tag{10}$$<p><center> <img align="center" width="1000" height="400" src="blog_images/shift_pdfs.png"></p>
 
 </div>
 </div>
@@ -14668,8 +14668,8 @@ $$ \hat T_n(r, \rho) = C_n\text{ }S_{n-1}(r) \text{ }\frac{(r+\frac{\rho}{2})^n}
 [2] <a href="https://arxiv.org/pdf/1312.6114.pdf">https://arxiv.org/pdf/1312.6114.pdf</a> Auto-Encoding Variational Bayes<br>
 [3] <a href="https://arxiv.org/pdf/1805.09298.pdf">https://arxiv.org/pdf/1805.09298.pdf</a> Learning towards Minimun Hyperspherical Energy<br>
 [4] <a href="https://en.wikipedia.org/wiki/Thomson_problem">https://en.wikipedia.org/wiki/Thomson_problem</a> Thomson Problem<br>
-[5] <a href="https://arxiv.org/pdf/1907.06845.pdf">https://arxiv.org/pdf/1907.06845.pdf</a> Tbe continuous Bernoulli: fixing a pervasive problem in variational autoencoders<br>
-[6] <a href="https://arxiv.org/pdf/2006.09273.pdf">https://arxiv.org/pdf/2006.09273.pdf</a> Density of States Estimation for Out-of-Distribution Dectection<br>
+[5] <a href="https://arxiv.org/pdf/1907.06845.pdf">https://arxiv.org/pdf/1907.06845.pdf</a> The continuous Bernoulli: fixing a pervasive problem in variational autoencoders<br>
+[6] <a href="https://arxiv.org/pdf/2006.09273.pdf">https://arxiv.org/pdf/2006.09273.pdf</a> Density of States Estimation for Out-of-Distribution Detection<br>
 [7] <a href="https://arxiv.org/pdf/2003.02977.pdf">https://arxiv.org/pdf/2003.02977.pdf</a> Liklihood Regret: An Out-of-Distribution Detection Score For Variational Auto-encoder<br>
 [8] <a href="https://www.cs.cornell.edu/jeh/book.pdf">https://www.cs.cornell.edu/jeh/book.pdf</a> Foundations of Data Science<br>
 [9] <a href="https://arxiv.org/pdf/1909.11480.pdf">https://arxiv.org/pdf/1909.11480.pdf</a> Input Complexity and Out-of-Distribution Detection with Likelihood Based Generative Models</p>
