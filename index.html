@@ -14264,7 +14264,7 @@ a.anchor-link {
 <h1 id="The-Thomson-Autoencoder-for-Out-of-Distribution-Detection">The Thomson Autoencoder for Out-of-Distribution Detection<a class="anchor-link" href="#The-Thomson-Autoencoder-for-Out-of-Distribution-Detection">&#182;</a></h1><p><em>Griffin Floto</em><br>
 <em>Posted on August 14, 2021</em></p>
 <body style="background-color:#FFFDF9;"></body><h2 id="Introduction">Introduction<a class="anchor-link" href="#Introduction">&#182;</a></h2><p>Generative deep learning models are popular architectures that have been shown to have poor performance detecting inputs that are outside the training distribution [1]. Suprisingly, both flow based models and variational auto-encoders suffer from this issue, despite being optimized to maximize the log-likelihood of the training data. Robust detection of out-of-distribution (OoD) inputs is highly desirable as this improves the reliability of models that will be deployed in safety critical applications.</p>
-<p>In this work a deep generative model is developed that seeks to improve the performance of OoD detection. Two common approaches to this problem are to either create a new type of model architecture, or to use existing methods and develop statistical tests. This work takes the former approach.</p>
+<p>In this work a deep generative model is developed that seeks to improve the performance of OoD detection. Two common approches to this problem are to either create a new type of model architecture, or to use existing methods and develop statistical tests. This work takes the former approach.</p>
 
 </div>
 </div>
@@ -14286,7 +14286,7 @@ $$ P(z) = C\text{ }\text{ exp}-\frac{1}{2}\bigg(\frac{||z||-\rho}{\sigma}\bigg)^
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>Rather than using the KLD with the reparameterization trick, an alternative method is used to structure the latent space. Given an encoded sample point $F(x_i) = z_i$, the first component of the total loss is to minimize the negative logarithm of $P(z_i)$.</p>
-$$ -\text{log }P(z_i) = \frac{1}{2} \bigg( \frac{||z_i||-\rho}{\sigma} \bigg)^2 \tag{2}$$<p>To avoid a degenerate solution where all $x_i$ are mapped to the same neighbourhood in $Z$, energy minimization is applied to ensure the even spreading of data points. If one considers each $z_i$ in the latent space as a unit point charge, the potential energy $U(N)$ can be given by</p>
+$$ -\text{log }P(z_i) = \frac{1}{2} \bigg( \frac{||z_i||-\rho}{\sigma} \bigg)^2 \tag{2}$$<p>To avoid a degenerate solution where all $x_i$ are mapped to the same neighborhood in $Z$, energy minimization is applied to ensure the even spreading of data points. If one considers each $z_i$ in the latent space as a unit point charge, the potential energy $U(N)$ can be given by</p>
 $$ U(N) = \frac {1}{N(N-1)} \sum^{N}_{\stackrel{i &lt; j}{}} \text{log}\big(||z_i - z_j||^{-1}\big) \tag{3}$$<p>which is derived in detail in [3]. The optimization of this objective closely resembles the Thomson problem, where one seeks to find the minimum electrostatic potential of $M$ electrons constrained to the surface of a sphere [4]. Thus, the working name for this model is the Thomson Autoencoder. Given a sample size of $N = 100$, the latent distribution would look like the following, assuming that that the negative log probability and potential energy are minimized.</p>
 <p><center> <img align="center" width="400" height="400" src="blog_images/sphere.gif"></p>
 
@@ -14296,8 +14296,8 @@ $$ U(N) = \frac {1}{N(N-1)} \sum^{N}_{\stackrel{i &lt; j}{}} \text{log}\big(||z_
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>Finally, a scheme for introducing reparameterized noise is required. The encoder $F$ maps $x_i \to z_i$, where noise is then added such that $\bar{z_i} = z_i + \mathcal{N}(0, \Sigma)$ and the original $x_i$ is recontructed by the decoder $G$ which maps $\bar{z_i} \to \tilde{x_i}$. As per the usual autoencoder structure, the reconstruction loss is minimized. Currently the $\mathcal{l}^2$ norm is used, however, this term could be be replaced by a more justified method such as the continuous Bernoulli distribution [5]. By seperating the latent variable $z_i$ into a radial and angular component $z^{rad}_i$ and $z^{ang}_i$, the noise can be introduced in a simple and precise manner. Unlike the VAE, these noise parameters are fixed, meaning they are not learned in the optimization process. First, the radial noise contribution is parameterized by the prior distribution variance $\sigma$</p>
 $$\bar z^{rad}_i = z^{rad}_i + \mathcal{N}(0, \sigma) \tag{4}$$<p>The angular noise is constructed such that it's variance is proportional to the average nearest neighbour distance given $N$ evenly spaced points on the surface on the $D_z-1$ sphere with radius $\rho$. Given a large $N$ relative to $D_z$ and $\rho$ it can be assumed that the local region around any point $z_i$ is flat. Thus, given $d$ as the average nearest neighbour distance, the radial noise contribution is then</p>
-$$\bar z^{ang}_i = z^{ang}_i + \mathcal{N} \bigg( {0, \frac{\rho}{2\theta \sqrt{d}}} \bigg) \text{ }, \text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ } d = \frac{1}{N} \sum^N_{i=0} \bigg (\text{min} \sum^N_{j=0, \text{ }j \neq i} ||z_i - z_j||\bigg) \tag{5}$$<p>where the hyperparameter $\theta$ is used to control the variance of the noise. For example, if $\theta = 1$ then the gaussian noise of neighbouring points will intersect at a variance of 1. In practice the noise can be implimented by first introducing the angular component, then normalizing the vector to it's original length, and finally adding the radial component. The combined loss function can be written with hyperparameters ${\lambda}$ as
-$$\mathcal{L}(x,z) = \frac{1}{n} \sum^n_{i=0} \text{ } \sum^n_{j=0, \text{ }j \neq i} ||x_i - \tilde{x_i}|| + \frac{\lambda_1}{2} \bigg(\frac{||z_i||-\rho}{\sigma}\bigg)^2 + \frac {\lambda_2}{(n-1)} \text{log}\big (||z_i - z_j||^{-1}\big) \tag{6} $$
+$$\bar z^{ang}_i = z^{ang}_i + \mathcal{N} \bigg( {0, \frac{\rho}{2\theta \sqrt{d}}} \bigg) \text{ }, \text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ } d = \frac{1}{N} \sum^N_{i=0} \bigg (\text{min} \sum^N_{j=0, \text{ }j \neq i} ||z_i - z_j||\bigg) \tag{5}$$<p>where the hyperparameter $\theta$ is used to control the variance of the noise. For example, if $\theta = 1$ then the gaussian noise of neighboring points will intersect at a variance of 1. In practice the noise can be implimented by first introducing the angular component, then normalizing the vector to it's original length, and finally adding the radial component. The combined loss function can be written with hyperparameters ${\lambda}$ as
+$$\mathcal{L}(x,z) = \frac{1}{n} \sum^n_{i=0} \text{ } \sum^n_{j=0, \text{ }j \neq i} ||x_i - \tilde{x_i}|| + \frac{\lambda_1}{2} \bigg(\frac{||z_i||-\rho}{\sigma}\bigg)^2 + \frac {\lambda_2}{(n-1)} \text{log}\big (||z_i - z_j||^{-1}\big) $$
 where $n$ is a given batch size. A graph of the ideal latent space is shown below with $D_z=3$, $\sigma = 0.1$ and $N=100$. The left graph has $\theta = 2$, while the right graph has $\theta = 1$, which are values that would be used in practice.</p>
 <p><img align="left" width="400" height="400" src="blog_images/noise_sphere.gif">
 <img align="right" width="400" height="400" src="blog_images/dense_sphere.gif"></p>
@@ -14321,7 +14321,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <th style="text-align:center">LLR</th>
 <th style="text-align:center">DoSE-KDE</th>
 <th style="text-align:center">DoSE-SVM</th>
-<th style="text-align:right">TAE</th>
+<th style="text-align:center">TAE</th>
+<th style="text-align:right">TAE-C</th>
 </tr>
 </thead>
 <tbody>
@@ -14336,6 +14337,7 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.470</td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center"><strong>1.000</strong></td>
+<td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:right"><strong>1.000</strong></td>
 </tr>
 <tr>
@@ -14346,6 +14348,7 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.404</td>
 <td style="text-align:center"><strong>0.999</strong></td>
 <td style="text-align:center">0.996</td>
+<td style="text-align:center"><strong>0.999</strong></td>
 <td style="text-align:right"><strong>0.999</strong></td>
 </tr>
 <tr>
@@ -14354,6 +14357,7 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center">0.277</td>
+<td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:right"><strong>1.000</strong></td>
@@ -14366,6 +14370,7 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.228</td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center"><strong>1.000</strong></td>
+<td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:right"><strong>1.000</strong></td>
 </tr>
 <tr>
@@ -14376,7 +14381,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.473</td>
 <td style="text-align:center">0.760</td>
 <td style="text-align:center">0.812</td>
-<td style="text-align:right"><strong>0.941</strong></td>
+<td style="text-align:center"><em>0.941</em></td>
+<td style="text-align:right"><strong>0.956</strong></td>
 </tr>
 <tr>
 <td style="text-align:left">VFlip</td>
@@ -14386,7 +14392,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.499</td>
 <td style="text-align:center">0.818</td>
 <td style="text-align:center">0.830</td>
-<td style="text-align:right"><strong>0.900</strong></td>
+<td style="text-align:center"><em>0.900</em></td>
+<td style="text-align:right"><strong>0.917</strong></td>
 </tr>
 <tr>
 <td style="text-align:left">FashionMNIST</td>
@@ -14399,6 +14406,7 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.508</td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center">0.998</td>
+<td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:right"><strong>1.000</strong></td>
 </tr>
 <tr>
@@ -14409,6 +14417,7 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.503</td>
 <td style="text-align:center">0.998</td>
 <td style="text-align:center">0.997</td>
+<td style="text-align:center"><strong>0.999</strong></td>
 <td style="text-align:right"><strong>0.999</strong></td>
 </tr>
 <tr>
@@ -14419,6 +14428,7 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.573</td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center">0.998</td>
+<td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:right"><strong>1.000</strong></td>
 </tr>
 <tr>
@@ -14429,6 +14439,7 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.501</td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center">0.998</td>
+<td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:right"><strong>1.000</strong></td>
 </tr>
 <tr>
@@ -14439,7 +14450,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.479</td>
 <td style="text-align:center">0.658</td>
 <td style="text-align:center">0.625</td>
-<td style="text-align:right"><strong>0.702</strong></td>
+<td style="text-align:center"><em>0.702</em></td>
+<td style="text-align:right"><strong>0.741</strong></td>
 </tr>
 <tr>
 <td style="text-align:left">VFlip</td>
@@ -14449,7 +14461,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.485</td>
 <td style="text-align:center">0.748</td>
 <td style="text-align:center">0.728</td>
-<td style="text-align:right"><strong>0.924</strong></td>
+<td style="text-align:center"><em>0.924</em></td>
+<td style="text-align:right"><strong>0.930</strong></td>
 </tr>
 </tbody>
 </table>
@@ -14463,7 +14476,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <th style="text-align:center">IC (jp2)</th>
 <th style="text-align:center">LR</th>
 <th style="text-align:center">LMD</th>
-<th style="text-align:right">TAE</th>
+<th style="text-align:center">TAE</th>
+<th style="text-align:right">TAE-C</th>
 </tr>
 </thead>
 <tbody>
@@ -14479,7 +14493,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.553</td>
 <td style="text-align:center">0.24</td>
 <td style="text-align:center">0.877</td>
-<td style="text-align:right"><strong>0.999</strong></td>
+<td style="text-align:center"><strong>0.999</strong></td>
+<td style="text-align:right"><em>0.998</em></td>
 </tr>
 <tr>
 <td style="text-align:left">CIFAR-10</td>
@@ -14490,7 +14505,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.999</td>
 <td style="text-align:center">0.968</td>
 <td style="text-align:center">0.995</td>
-<td style="text-align:right">0.996</td>
+<td style="text-align:center">0.996</td>
+<td style="text-align:right">0.999</td>
 </tr>
 <tr>
 <td style="text-align:left">SVHN</td>
@@ -14501,7 +14517,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center">0.785</td>
 <td style="text-align:center">0.995</td>
-<td style="text-align:right">0.977</td>
+<td style="text-align:center">0.977</td>
+<td style="text-align:right"><strong>1.000</strong></td>
 </tr>
 <tr>
 <td style="text-align:left">KMNIST</td>
@@ -14512,18 +14529,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.599</td>
 <td style="text-align:center">0.983</td>
 <td style="text-align:center">0.955</td>
+<td style="text-align:center"><strong>0.999</strong></td>
 <td style="text-align:right"><strong>0.999</strong></td>
-</tr>
-<tr>
-<td style="text-align:left">NotMNIST</td>
-<td style="text-align:center">0.999</td>
-<td style="text-align:center"><strong>1.000</strong></td>
-<td style="text-align:center">0.943</td>
-<td style="text-align:center">0.923</td>
-<td style="text-align:center">0.966</td>
-<td style="text-align:center">0.996</td>
-<td style="text-align:center">0.998</td>
-<td style="text-align:right"><strong>1.000</strong></td>
 </tr>
 <tr>
 <td style="text-align:left">Noise</td>
@@ -14531,6 +14538,7 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.963</td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center">0.453</td>
+<td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center"><strong>1.000</strong></td>
@@ -14545,6 +14553,7 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center">0.775</td>
 <td style="text-align:center">0.981</td>
+<td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:right"><strong>1.000</strong></td>
 </tr>
 <tr>
@@ -14552,14 +14561,15 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 </tr>
 <tr>
 <td style="text-align:left">MNIST</td>
-<td style="text-align:center"><strong>0.998</strong></td>
+<td style="text-align:center">0.998</td>
 <td style="text-align:center">0.976</td>
 <td style="text-align:center">0.008</td>
 <td style="text-align:center">0.994</td>
 <td style="text-align:center">0.988</td>
 <td style="text-align:center">0.792</td>
 <td style="text-align:center">0.027</td>
-<td style="text-align:right">0.993</td>
+<td style="text-align:center">0.993</td>
+<td style="text-align:right"><strong>0.999</strong></td>
 </tr>
 <tr>
 <td style="text-align:left">FMNIST</td>
@@ -14570,7 +14580,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.990</td>
 <td style="text-align:center">0.807</td>
 <td style="text-align:center">0.183</td>
-<td style="text-align:right">0.770</td>
+<td style="text-align:center">0.770</td>
+<td style="text-align:right">0.765</td>
 </tr>
 <tr>
 <td style="text-align:left">SVHN</td>
@@ -14581,7 +14592,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.908</td>
 <td style="text-align:center">0.265</td>
 <td style="text-align:center">0.279</td>
-<td style="text-align:right">0.157</td>
+<td style="text-align:center">0.157</td>
+<td style="text-align:right">0.591</td>
 </tr>
 <tr>
 <td style="text-align:left">LSUN</td>
@@ -14592,7 +14604,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.315</td>
 <td style="text-align:center">0.632</td>
 <td style="text-align:center">0.527</td>
-<td style="text-align:right"><strong>0.939</strong></td>
+<td style="text-align:center"><strong>0.939</strong></td>
+<td style="text-align:right"><em>0.82</em></td>
 </tr>
 <tr>
 <td style="text-align:left">CelebA</td>
@@ -14603,7 +14616,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.564</td>
 <td style="text-align:center">0.447</td>
 <td style="text-align:center">0.576</td>
-<td style="text-align:right"><strong>0.883</strong></td>
+<td style="text-align:center"><strong>0.883</strong></td>
+<td style="text-align:right"><em>0.757</em></td>
 </tr>
 <tr>
 <td style="text-align:left">Noise</td>
@@ -14614,6 +14628,7 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center">0.054</td>
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center">0.983</td>
+<td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:right"><strong>1.000</strong></td>
 </tr>
 <tr>
@@ -14625,7 +14640,8 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 <td style="text-align:center"><strong>1.000</strong></td>
 <td style="text-align:center">0.470</td>
 <td style="text-align:center">0.431</td>
-<td style="text-align:right">0.009</td>
+<td style="text-align:center">0.009</td>
+<td style="text-align:right"><strong>1.000</strong></td>
 </tr>
 </tbody>
 </table>
@@ -14634,16 +14650,16 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="Discussion-and-Comparision-to-the-Gaussian-Distribution">Discussion and Comparision to the Gaussian Distribution<a class="anchor-link" href="#Discussion-and-Comparision-to-the-Gaussian-Distribution">&#182;</a></h2><p>Compared to many other proposed methods, the TAE performes surprisingly well considering that it only uses an estimate of the typically low-performing log-likelihood lower bound. Fortunately, this means that many of the methods that it was compared against can be applied on top of this method for additional performance gains. For example, the TAE's reconstruction error correlates with the data complexity, something that is discussed in detail in [9] and be seen most clearly by the poor performance on the constant dataset. When a simple term considering the data complexity is included into the reconstruction error, the performance rises to match or beat the compared methods in all but 3 instances. Furthermore, this removes the pathological cases where the model predicts an OoD dataset below 0.5 AUROC.</p>
+<h2 id="Discussion-and-Comparision-to-the-Gaussian-Distribution">Discussion and Comparision to the Gaussian Distribution<a class="anchor-link" href="#Discussion-and-Comparision-to-the-Gaussian-Distribution">&#182;</a></h2><p>Compared to many other proposed methods, the TAE performes surprisingly well considering that it only uses an estimate of the typically low-performing log-likelihood lower bound. Fortunately, this means that many of the methods that it was compared against can be applied on top of this method for additional performance gains. For example, the TAE's reconstruction error correlates with the data complexity, something that is discussed in detail in [9] and be seen most clearly by the poor performance on the constant dataset. When a simple term considering the data complexity is included into the reconstruction error, the performance rises to match or beat the compared methods in all but 3 instances. Furthermore, this removes the pathological instances where the model predicts an OoD dataset below 0.5 AUROC. The correction is listed as TAE-C.</p>
 
 </div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>An interesting observation can be made when comparing the proposed distribution to the standard gaussian in high dimensions. As described in [8], the majority of the probability mass of an identity covariance gaussian tends to lie within a region centered at $\sqrt{n}$, where $n$ is the dimension of the space. To investigate this effect in more detail it useful to redefine the probability distributions using radial coordinates. By using the surface area of a sphere in $n$ dimensions $S_{n-1}$, the probablility distributions can be defined in the following manner where $G_n(r)$ is the gaussian distribution and $T_n(r, \rho)$ is the proposed Thomson distribution. These functions are also plotted below using 7 evenly placed distributions with dimension $n$ between 5 and 155</p>
-$$ S_{n-1}(r) = \frac{2\pi^{n/2} r^n}{\Gamma (\frac{n}{2})} \tag{7}$$<p></p>
-$$ G_n(r) = A_n\text{ }S_{n-1}(r)\text{ exp} -\frac{1}{2} \bigg(\frac{r}{\sigma}\bigg)^2 \tag{8}$$<p></p>
-$$ T_n(r,\rho) = B_n\text{ }S_{n-1}(r)\text{ exp}-\frac{1}{2} \bigg(\frac{r - \rho}{\sigma}\bigg)^2 \tag{9}$$<p></p>
+$$ S_{n-1}(r) = \frac{2\pi^{n/2} r^n}{\Gamma (\frac{n}{2})} $$<p></p>
+$$ G_n(r) = A_n\text{ }S_{n-1}(r)\text{ exp} -\frac{1}{2} \bigg(\frac{r}{\sigma}\bigg)^2$$<p></p>
+$$ T_n(r,\rho) = B_n\text{ }S_{n-1}(r)\text{ exp}-\frac{1}{2} \bigg(\frac{r - \rho}{\sigma}\bigg)^2$$<p></p>
 <p><center> <img align="center" width="1000" height="400" src="blog_images/og_pdfs.png"></p>
 
 </div>
@@ -14651,7 +14667,7 @@ $$ T_n(r,\rho) = B_n\text{ }S_{n-1}(r)\text{ exp}-\frac{1}{2} \bigg(\frac{r - \r
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>It can be immediately seen that the distributions appear to converge up to a shift, which turns out to be $\frac{\rho}{2}$. The Thomson distribution $T_n(r, \rho)$ can then be re-written under this shift as $\hat T_n(r, \rho)$, where it is plotted alongside the gaussian distribution below.</p>
-$$ \hat T_n(r, \rho) = C_n\text{ }S_{n-1}(r) \text{ }\frac{(r+\frac{\rho}{2})^n}{r^n} \text{ exp}-\frac{1}{2} \bigg(\frac{r - \frac{\rho}{2}}{\sigma}\bigg)^2 \tag{10}$$<p><center> <img align="center" width="1000" height="400" src="blog_images/shift_pdfs.png"></p>
+$$ \hat T_n(r, \rho) = C_n\text{ }S_{n-1}(r) \text{ }\frac{(r+\frac{\rho}{2})^n}{r^n} \text{ exp}-\frac{1}{2} \bigg(\frac{r - \frac{\rho}{2}}{\sigma}\bigg)^2 $$<p><center> <img align="center" width="1000" height="400" src="blog_images/shift_pdfs.png"></p>
 
 </div>
 </div>
@@ -14668,8 +14684,8 @@ $$ \hat T_n(r, \rho) = C_n\text{ }S_{n-1}(r) \text{ }\frac{(r+\frac{\rho}{2})^n}
 [2] <a href="https://arxiv.org/pdf/1312.6114.pdf">https://arxiv.org/pdf/1312.6114.pdf</a> Auto-Encoding Variational Bayes<br>
 [3] <a href="https://arxiv.org/pdf/1805.09298.pdf">https://arxiv.org/pdf/1805.09298.pdf</a> Learning towards Minimun Hyperspherical Energy<br>
 [4] <a href="https://en.wikipedia.org/wiki/Thomson_problem">https://en.wikipedia.org/wiki/Thomson_problem</a> Thomson Problem<br>
-[5] <a href="https://arxiv.org/pdf/1907.06845.pdf">https://arxiv.org/pdf/1907.06845.pdf</a> The continuous Bernoulli: fixing a pervasive problem in variational autoencoders<br>
-[6] <a href="https://arxiv.org/pdf/2006.09273.pdf">https://arxiv.org/pdf/2006.09273.pdf</a> Density of States Estimation for Out-of-Distribution Detection<br>
+[5] <a href="https://arxiv.org/pdf/1907.06845.pdf">https://arxiv.org/pdf/1907.06845.pdf</a> Tbe continuous Bernoulli: fixing a pervasive problem in variational autoencoders<br>
+[6] <a href="https://arxiv.org/pdf/2006.09273.pdf">https://arxiv.org/pdf/2006.09273.pdf</a> Density of States Estimation for Out-of-Distribution Dectection<br>
 [7] <a href="https://arxiv.org/pdf/2003.02977.pdf">https://arxiv.org/pdf/2003.02977.pdf</a> Liklihood Regret: An Out-of-Distribution Detection Score For Variational Auto-encoder<br>
 [8] <a href="https://www.cs.cornell.edu/jeh/book.pdf">https://www.cs.cornell.edu/jeh/book.pdf</a> Foundations of Data Science<br>
 [9] <a href="https://arxiv.org/pdf/1909.11480.pdf">https://arxiv.org/pdf/1909.11480.pdf</a> Input Complexity and Out-of-Distribution Detection with Likelihood Based Generative Models</p>
