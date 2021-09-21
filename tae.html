@@ -17621,36 +17621,6 @@ where $n$ is a given batch size. A graph of the ideal latent space is shown belo
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="Discussion-and-Comparision-to-the-Gaussian-Distribution">Discussion and Comparision to the Gaussian Distribution<a class="anchor-link" href="#Discussion-and-Comparision-to-the-Gaussian-Distribution">&#182;</a></h2><p>Compared to many other proposed methods, the TAE performes surprisingly well considering that it only uses an estimate of the typically low-performing log-likelihood lower bound. An additional benefit is that many of the comparison methods can be applied on top of the TAE for additional performance gains. For example, the TAE's reconstruction error correlates with the data complexity, something that is discussed in detail in [8] and be seen most clearly by the poor performance on the constant dataset. When a simple term considering the data complexity is included into the reconstruction error, the performance rises to match or beat the compared methods in all but 3 instances. Furthermore, this removes the pathological instances where the model predicts an OoD dataset below 0.5 AUROC. The correction is listed as TAE-C.</p>
-
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>An interesting observation can be made when comparing the proposed distribution to the standard gaussian in high dimensions. As described in [9], the majority of the probability mass of an identity covariance gaussian tends to lie within a region centered at $\sqrt{n}$, where $n$ is the dimension of the space. To investigate this effect in more detail it useful to redefine the probability distributions using radial coordinates. By using the surface area of a sphere in $n$ dimensions $S_{n-1}$, the probablility distributions can be defined in the following manner where $G_n(r)$ is the gaussian distribution and $T_n(r, \rho)$ is the proposed Thomson distribution. These functions are also plotted below using 7 evenly placed distributions with dimension $n$ between 5 and 155</p>
-$$ S_{n-1}(r) = \frac{2\pi^{n/2} r^n}{\Gamma (\frac{n}{2})} \tag{7}$$<p></p>
-$$ G_n(r) = A_n\text{ }S_{n-1}(r)\text{ exp} -\frac{1}{2} \bigg(\frac{r}{\sigma}\bigg)^2 \tag{8}$$<p></p>
-$$ T_n(r,\rho) = B_n\text{ }S_{n-1}(r)\text{ exp}-\frac{1}{2} \bigg(\frac{r - \rho}{\sigma}\bigg)^2 \tag{9}$$<p></p>
-<p><center> <img align="center" width="1000" height="400" src="imgs/og_pdfs.png"></p>
-
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>It can be immediately seen that the distributions appear to converge up to a shift, which turns out to be $\frac{\rho}{2}$. The Thomson distribution $T_n(r, \rho)$ can then be re-written under this shift as $\hat T_n(r, \rho)$, where it is plotted alongside the gaussian distribution below.</p>
-$$ \hat T_n(r, \rho) = C_n\text{ }S_{n-1}(r) \text{ }\frac{(r+\frac{\rho}{2})^n}{r^n} \text{ exp}-\frac{1}{2} \bigg(\frac{r - \frac{\rho}{2}}{\sigma}\bigg)^2 \tag{10}$$<p><center> <img align="center" width="1000" height="400" src="imgs/shift_pdfs.png"></p>
-
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>It would appear as though $G_n(r) \approx \hat T_n(r, \rho)$ when $n$ is at least $\mathcal{O}(10)$. Two important questions arise from this analysis. First, can the OoD detection performance achieved in the results section be replicated when $\hat T_n(r, \rho)$ is used as the prior distribution? Second, is using $\hat T_n(r, \rho)$ as a prior with the proposed method a valid approximation of variational inference with an identity covariance gaussian prior?</p>
-<p>As for the former question, initial experiments show essentially identical performance between the original distribution used and $\hat T_n(r, \rho)$. The latter question currently remains unanswered.</p>
-
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h2 id="References">References<a class="anchor-link" href="#References">&#182;</a></h2><p>[1] <a href="https://arxiv.org/pdf/1810.09136.pdf">https://arxiv.org/pdf/1810.09136.pdf</a> Do Deep Generative Models Know What They Don't Know<br>
 [2] <a href="https://arxiv.org/pdf/1312.6114.pdf">https://arxiv.org/pdf/1312.6114.pdf</a> Auto-Encoding Variational Bayes<br>
 [3] <a href="https://arxiv.org/pdf/1805.09298.pdf">https://arxiv.org/pdf/1805.09298.pdf</a> Learning towards Minimum Hyperspherical Energy<br>
